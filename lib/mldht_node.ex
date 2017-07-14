@@ -1,4 +1,4 @@
-defmodule MlDHT do
+defmodule MlDHT.Node do
 
   @moduledoc ~S"""
   MlDHT is an Elixir package that provides a Kademlia Distributed Hash Table
@@ -8,7 +8,7 @@ defmodule MlDHT do
 
 
   """
-
+  
   @typedoc """
   A binary which contains the infohash of a torrent. An infohash is a SHA1
   encoded hex sum which identifies a torrent.
@@ -22,34 +22,39 @@ defmodule MlDHT do
 
   @name __MODULE__
 
-  use Application
+  use Supervisor
 
-  import Supervisor.Spec, warn: false
-
-  @doc false
-  def start(_type, _arg) do
-
-    Supervisor.start_link(@name, [], name: @name)
-
-    # Enum.map(1..5, fn num ->
-    #   Supervisor.start_child(@name, num)
-    # end)
+  defp routing_table_for(ip_version) do
+    if Application.get_env(:mldht, ip_version) do
+      worker(RoutingTable.Worker, [ip_version], [id: ip_version])
+    end
   end
 
-  def init([]) do
-    # children = Enum.map(1..5, fn num -> supervisor(MlDHT.Node, num, id: MlDHT.Registry.id_to_register(@name, num)) end)
-    children = [
-      supervisor(MlDHT.Node, [])
+  @doc false
+  def start_link(id) do
+    Supervisor.start_link(@name, id)
+  end
+
+  def init(id) do
+    ## Define workers and child supervisors to be supervised
+
+    ## According to BEP 32 there are two distinct DHTs: the IPv4 DHT, and the
+    ## IPv6 DHT. This means we need two seperate routing tables for each IP
+    ## version.
+    children = [] ++ [routing_table_for(:ipv4)] ++ [routing_table_for(:ipv6)]
+
+    children = children ++ [
+      worker(DHTServer.Worker,  []),
+      worker(DHTServer.Storage, []),
+      supervisor(Registry, [:unique, MlDHT.Registry.id_to_registry(@name, id)])
     ]
 
-    opts = [strategy: :simple_one_for_one, name: MlDHT.Supervisor]
+    children = Enum.filter(children, fn (v) -> v != nil end)
+
+    opts = [strategy: :one_for_one]
 
     supervise(children, opts)
   end
-
-  def new(%Range{} = ids), do: Enum.map(ids, &new/1)
-
-  def new(num), do: Supervisor.start_child(@name, [num])
 
   @doc ~S"""
   This function needs an infohash as binary and a callback function as
