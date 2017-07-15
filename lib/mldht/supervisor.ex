@@ -1,4 +1,4 @@
-defmodule MlDHT.Node do
+defmodule MlDHT.Supervisor do
 
   @moduledoc ~S"""
   MlDHT is an Elixir package that provides a Kademlia Distributed Hash Table
@@ -8,7 +8,7 @@ defmodule MlDHT.Node do
 
 
   """
-  
+
   @typedoc """
   A binary which contains the infohash of a torrent. An infohash is a SHA1
   encoded hex sum which identifies a torrent.
@@ -24,37 +24,24 @@ defmodule MlDHT.Node do
 
   use Supervisor
 
-  defp routing_table_for(ip_version) do
-    if Application.get_env(:mldht, ip_version) do
-      worker(RoutingTable.Worker, [ip_version], [id: ip_version])
-    end
-  end
-
   @doc false
-  def start_link(id) do
-    Supervisor.start_link(@name, id)
+  def start_link do
+    Supervisor.start_link(@name, [], name: @name)
   end
 
-  def init(id) do
-    ## Define workers and child supervisors to be supervised
-
-    ## According to BEP 32 there are two distinct DHTs: the IPv4 DHT, and the
-    ## IPv6 DHT. This means we need two seperate routing tables for each IP
-    ## version.
-    children = [] ++ [routing_table_for(:ipv4)] ++ [routing_table_for(:ipv6)]
-
-    children = children ++ [
-      worker(DHTServer.Worker,  []),
-      worker(DHTServer.Storage, []),
-      supervisor(Registry, [:unique, MlDHT.Registry.id_to_registry(@name, id)])
+  def init([]) do
+    children = [
+      supervisor(MlDHT.Node, [])
     ]
 
-    children = Enum.filter(children, fn (v) -> v != nil end)
-
-    opts = [strategy: :one_for_one]
+    opts = [strategy: :simple_one_for_one, name: MlDHT.Supervisor]
 
     supervise(children, opts)
   end
+
+  def new(%Range{} = ids), do: Enum.map(ids, &new/1)
+
+  def new(num), do: Supervisor.start_child(@name, [num])
 
   @doc ~S"""
   This function needs an infohash as binary and a callback function as

@@ -16,8 +16,9 @@ defmodule DHTServer.Worker do
 
   @type ip_vers :: :ipv4 | :ipv6
 
-  def start_link do
-    GenServer.start_link(__MODULE__, [], name: @name)
+  def start_link(id) do
+    GenServer.start_link(__MODULE__, [])
+    MlDHT.Registry.add(@name, id)
   end
 
 

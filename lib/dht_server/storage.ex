@@ -13,8 +13,9 @@ defmodule DHTServer.Storage do
   ## 30 Minutes
   @node_expired 60 * 30
 
-  def start_link do
-    GenServer.start_link(__MODULE__, [], name: @name)
+  def start_link(id) do
+    GenServer.start_link(__MODULE__, [])
+    MlDHT.Registry.add(@name, id)
   end
 
   def init([]) do
