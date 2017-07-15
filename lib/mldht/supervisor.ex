@@ -39,9 +39,8 @@ defmodule MlDHT.Supervisor do
     supervise(children, opts)
   end
 
-  def new(%Range{} = ids), do: Enum.map(ids, &new/1)
-
-  def new(num), do: Supervisor.start_child(@name, [num])
+  def new([_id | xs]), do: new(xs)
+  def new(id), do: Supervisor.start_child(@name, [id])
 
   @doc ~S"""
   This function needs an infohash as binary and a callback function as

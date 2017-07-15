@@ -2,13 +2,8 @@ defmodule MlDHT.Registry do
 
   @name __MODULE__
 
-  def add(module, num) do
-    Registry.register(@name, module, num)
-  end
+  def new_name(module, id), do: { :via, Registry, { @name, { module, id } } }
 
-  # def add(module, num) do
-  #   to_string(name) <> to_string(num)
-  #   |> String.to_atom
-  # end
+  def lookup(module, id), do: Registry.lookup(@name, {module, id})
 
 end

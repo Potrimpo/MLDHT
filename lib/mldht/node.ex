@@ -32,7 +32,7 @@ defmodule MlDHT.Node do
 
   @doc false
   def start_link(id) do
-    Supervisor.start_link(@name, id)
+    Supervisor.start_link(@name, id, name: MlDHT.Registry.new_name(@name, id))
   end
 
   def init(id) do
