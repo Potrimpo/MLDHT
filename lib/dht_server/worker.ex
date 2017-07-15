@@ -17,8 +17,7 @@ defmodule DHTServer.Worker do
   @type ip_vers :: :ipv4 | :ipv6
 
   def start_link(id) do
-    GenServer.start_link(__MODULE__, [])
-    MlDHT.Registry.add(@name, id)
+    GenServer.start_link(__MODULE__, id)
   end
 
 
@@ -76,7 +75,9 @@ defmodule DHTServer.Worker do
     end
   end
 
-  def init([]) do
+  def init(id) do
+    MlDHT.Registry.add(@name, id)
+
     cfg_ipv6_is_enabled? = Application.get_env(:mldht, :ipv6)
     cfg_ipv4_is_enabled? = Application.get_env(:mldht, :ipv4)
 

@@ -14,11 +14,11 @@ defmodule DHTServer.Storage do
   @node_expired 60 * 30
 
   def start_link(id) do
-    GenServer.start_link(__MODULE__, [])
-    MlDHT.Registry.add(@name, id)
+    GenServer.start_link(__MODULE__, id)
   end
 
-  def init([]) do
+  def init(id) do
+    MlDHT.Registry.add(@name, id)
     Process.send_after(self(), :review_storage, @review_time * 1000)
     {:ok, %{}}
   end
