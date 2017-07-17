@@ -123,7 +123,7 @@ defmodule DHTServer.Worker do
   end
 
   def handle_cast({:search_announce, infohash, callback}, state) do
-    nodes = RoutingTable.closest_nodes(:ipv4, infohash)
+    nodes = RoutingTable.closest_nodes(:ipv4, state.node_id, infohash)
 
     Search.start_link(state.socket, state.node_id)
     |> Search.get_peers(target: infohash, start_nodes: nodes,
@@ -133,7 +133,7 @@ defmodule DHTServer.Worker do
   end
 
   def handle_cast({:search_announce, infohash, callback, port}, state) do
-    nodes = RoutingTable.closest_nodes(:ipv4, infohash)
+    nodes = RoutingTable.closest_nodes(:ipv4, state.node_id, infohash)
 
     Search.start_link(state.socket, state.node_id)
     |> Search.get_peers(target: infohash, start_nodes: nodes,
@@ -143,7 +143,7 @@ defmodule DHTServer.Worker do
   end
 
   def handle_cast({:search, infohash, callback}, state) do
-    nodes = RoutingTable.closest_nodes(:ipv4, infohash)
+    nodes = RoutingTable.closest_nodes(:ipv4, state.node_id, infohash)
 
     Search.start_link(state.socket, state.node_id)
     |> Search.get_peers(target: infohash, start_nodes: nodes, port: 0,
@@ -213,7 +213,7 @@ defmodule DHTServer.Worker do
 
     ## Get closest nodes for the requested target from the routing table
     nodes = ip_vers
-    |> RoutingTable.closest_nodes(remote.target)
+    |> RoutingTable.closest_nodes(state.node_id, remote.target)
     |> Enum.map(fn(pid) -> Node.to_tuple(pid) end)
 
     Logger.debug("[#{Base.encode16(remote.node_id)}] << find_node_reply")
@@ -245,7 +245,7 @@ defmodule DHTServer.Worker do
       [node_id: state.node_id, values: values, tid: remote.tid, token: token]
     else
       ## Get the closest nodes for the requested info_hash
-      nodes = Enum.map(RoutingTable.closest_nodes(ip_vers, remote.info_hash), fn(pid) ->
+      nodes = Enum.map(RoutingTable.closest_nodes(ip_vers, state.node_id, remote.info_hash), fn(pid) ->
         Node.to_tuple(pid)
       end)
 

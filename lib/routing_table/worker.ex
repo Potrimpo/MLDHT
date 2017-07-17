@@ -56,16 +56,17 @@ defmodule RoutingTable.Worker do
     GenServer.cast(name, :print)
   end
 
-  def get(name, node_id) do
-    GenServer.call(name, {:get, node_id})
-  end
+  # This doesn't seem to be called anywhere
+  # def get(name, node_id) do
+  #   GenServer.call(name, {:get, node_id})
+  # end
 
-  def get(remote, {socket, ip_vers, node_id}) do
+  def get(remote, {_socket, ip_vers, node_id}) do
     GenServer.call(Namespace.name(ip_vers, node_id), {:get, remote})
   end
 
-  def closest_nodes(name, target) do
-    GenServer.call(name, {:closest_nodes, target})
+  def closest_nodes(ip_vers, node_id, target) do
+    GenServer.call(Namespace.name(ip_vers, node_id), {:closest_nodes, target})
   end
 
   def del(name, node_id) do
