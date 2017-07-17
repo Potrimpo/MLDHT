@@ -26,9 +26,9 @@ defmodule MlDHT.Node do
 
   use Supervisor
 
-  defp routing_table_for(ip_version) do
+  defp routing_table_for(node_id, ip_version) do
     if Application.get_env(:mldht, ip_version) do
-      worker(RoutingTable.Worker, [ip_version], [id: ip_version])
+      worker(RoutingTable.Worker, [node_id, ip_version], [id: ip_version])
     end
   end
 
@@ -45,7 +45,7 @@ defmodule MlDHT.Node do
     ## According to BEP 32 there are two distinct DHTs: the IPv4 DHT, and the
     ## IPv6 DHT. This means we need two seperate routing tables for each IP
     ## version.
-    children = [] ++ [routing_table_for(:ipv4)] ++ [routing_table_for(:ipv6)]
+    children = [] ++ [routing_table_for(node_id, :ipv4)] ++ [routing_table_for(node_id, :ipv6)]
 
     children = children ++ [
       worker(DHTServer.Worker,  [node_id, socket_num]),

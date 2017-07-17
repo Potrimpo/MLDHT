@@ -6,6 +6,7 @@ defmodule RoutingTable.Worker do
   require Logger
   require Bitwise
 
+  alias MlDHT.Namespace
   alias RoutingTable.Node
   alias RoutingTable.Bucket
   alias RoutingTable.Distance
@@ -30,17 +31,17 @@ defmodule RoutingTable.Worker do
   # Public API #
   ##############
 
-  def start_link(name) do
-    Logger.debug "name: #{name}"
-    GenServer.start_link(__MODULE__, ["AAAAAAAAAAAAAAAAAAAA"], name: name)
+  def start_link(node_id, ip_version) do
+    # Unsure why we're sending this string to be saved as node_id in the routing table
+    GenServer.start_link(__MODULE__, ["AAAAAAAAAAAAAAAAAAAA"], name: Namespace.name(ip_version, node_id))
   end
 
   def add(name, remote_node_id, address, socket) do
     GenServer.call(name, {:add, remote_node_id, address, socket})
   end
 
-  def node_id(name, node_id) do
-    GenServer.call(name, {:node_id, node_id})
+  def node_id(ip_vers, node_id) do
+    GenServer.call(Namespace.name(ip_vers, node_id), {:node_id, node_id})
   end
 
   def node_id(name) do
@@ -59,8 +60,8 @@ defmodule RoutingTable.Worker do
     GenServer.call(name, {:get, node_id})
   end
 
-  def get(name, node_id, address, socket) do
-    GenServer.call(name, {:get, node_id, address, socket})
+  def get(remote, {socket, ip_vers, node_id}) do
+    GenServer.call(Namespace.name(ip_vers, node_id), {:get, remote})
   end
 
   def closest_nodes(name, target) do
