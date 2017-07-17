@@ -34,7 +34,7 @@ defmodule MlDHT do
   def init([]) do
     children = [
       supervisor(MlDHT.Supervisor, []),
-      supervisor(Registry, [:unique, MlDHT.Registry])
+      supervisor(Registry, [:unique, MlDHT.Namespace])
     ]
 
     opts = [strategy: :one_for_one, name: MlDHT]

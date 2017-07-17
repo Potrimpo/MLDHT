@@ -5,6 +5,8 @@ defmodule DHTServer.Storage do
 
   require Logger
 
+  alias MlDHT.Namespace
+
   @name __MODULE__
 
   ## 5 Minutes
@@ -14,7 +16,7 @@ defmodule DHTServer.Storage do
   @node_expired 60 * 30
 
   def start_link(id) do
-    GenServer.start_link(__MODULE__, [], name: MlDHT.Registry.new_name(@name, id))
+    GenServer.start_link(__MODULE__, [], name: Namespace.name(@name, id))
   end
 
   def init([]) do
@@ -31,8 +33,8 @@ defmodule DHTServer.Storage do
   end
 
 
-  def has_nodes_for_infohash?(infohash) do
-    GenServer.call(@name, {:has_nodes_for_infohash?, infohash})
+  def has_nodes_for_infohash?(infohash, node_id) do
+    GenServer.call(Namespace.name(@name, node_id), {:has_nodes_for_infohash?, infohash})
   end
 
   def get_nodes(infohash) do

@@ -5,6 +5,7 @@ defmodule DHTServer.Worker do
 
   require Logger
 
+  alias MlDHT.Namespace
   alias DHTServer.Utils,     as: Utils
   alias DHTServer.Storage,   as: Storage
 
@@ -16,8 +17,11 @@ defmodule DHTServer.Worker do
 
   @type ip_vers :: :ipv4 | :ipv6
 
-  def start_link(id) do
-    GenServer.start_link(__MODULE__, [], name: MlDHT.Registry.new_name(@name, id))
+  def start_link(node_id, socket_num) do
+    Logger.debug "DHTServer.Worker.start_link"
+    GenServer.start_link(
+      __MODULE__, [node_id, socket_num], name: Namespace.name(@name, node_id)
+    )
   end
 
 
@@ -75,7 +79,7 @@ defmodule DHTServer.Worker do
     end
   end
 
-  def init([]) do
+  def init([node_id, socket_num]) do
     cfg_ipv6_is_enabled? = Application.get_env(:mldht, :ipv6)
     cfg_ipv4_is_enabled? = Application.get_env(:mldht, :ipv4)
 
@@ -84,12 +88,13 @@ defmodule DHTServer.Worker do
     end
 
     ## Generate a new node ID
-    node_id = Utils.gen_node_id()
+    # node_id = Utils.gen_node_id()
     Logger.debug "Node-ID: #{Base.encode16 node_id}"
 
-    cfg_port = Application.get_env(:mldht, :port)
-    socket   = if cfg_ipv4_is_enabled?, do: create_udp_socket(cfg_port, :ipv4), else: nil
-    socket6  = if cfg_ipv6_is_enabled?, do: create_udp_socket(cfg_port, :ipv6), else: nil
+    # Use a unique socket for each MlDHT node
+    # cfg_port = Application.get_env(:mldht, :port) + id
+    socket   = if cfg_ipv4_is_enabled?, do: create_udp_socket(socket_num, :ipv4), else: nil
+    socket6  = if cfg_ipv6_is_enabled?, do: create_udp_socket(socket_num, :ipv6), else: nil
 
     ## Change secret of the token every 5 minutes
     Process.send_after(self(), :change_secret, 60 * 1000 * 5)
@@ -235,7 +240,7 @@ defmodule DHTServer.Worker do
     token = :crypto.hash(:sha, Utils.tuple_to_ipstr(ip, port) <> state.secret)
 
     args =
-    if Storage.has_nodes_for_infohash?(remote.info_hash) do
+    if Storage.has_nodes_for_infohash?(remote.info_hash, state.node_id) do
       values = Storage.get_nodes(remote.info_hash)
       [node_id: state.node_id, values: values, tid: remote.tid, token: token]
     else

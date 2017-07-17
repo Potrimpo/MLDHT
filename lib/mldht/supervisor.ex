@@ -39,8 +39,14 @@ defmodule MlDHT.Supervisor do
     supervise(children, opts)
   end
 
-  def new([_id | xs]), do: new(xs)
-  def new(id), do: Supervisor.start_child(@name, [id])
+  def new(), do: new(1)
+  def new(num) when num > 1, do: new(num - 1)
+  def new(num) do
+    node_id = DHTServer.Utils.gen_node_id()
+    cfg_port = Application.get_env(:mldht, :port) + num
+
+    Supervisor.start_child(@name, [node_id, cfg_port])
+  end
 
   @doc ~S"""
   This function needs an infohash as binary and a callback function as

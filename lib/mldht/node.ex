@@ -22,6 +22,8 @@ defmodule MlDHT.Node do
 
   @name __MODULE__
 
+  alias MlDHT.Namespace
+
   use Supervisor
 
   defp routing_table_for(ip_version) do
@@ -31,11 +33,13 @@ defmodule MlDHT.Node do
   end
 
   @doc false
-  def start_link(id) do
-    Supervisor.start_link(@name, id, name: MlDHT.Registry.new_name(@name, id))
+  def start_link(node_id, socket_num) do
+    Supervisor.start_link(
+      @name, [node_id, socket_num], name: Namespace.name(@name, node_id)
+    )
   end
 
-  def init(id) do
+  def init([node_id, socket_num]) do
     ## Define workers and child supervisors to be supervised
 
     ## According to BEP 32 there are two distinct DHTs: the IPv4 DHT, and the
@@ -44,8 +48,8 @@ defmodule MlDHT.Node do
     children = [] ++ [routing_table_for(:ipv4)] ++ [routing_table_for(:ipv6)]
 
     children = children ++ [
-      worker(DHTServer.Worker,  [id]),
-      worker(DHTServer.Storage, [id])
+      worker(DHTServer.Worker,  [node_id, socket_num]),
+      worker(DHTServer.Storage, [node_id])
     ]
 
     children = Enum.filter(children, fn (v) -> v != nil end)
