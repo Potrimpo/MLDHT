@@ -44,14 +44,12 @@ defmodule MlDHT.Supervisor do
   Can take a pre-computed node_id (useful for testing purposes)
   """
   def new(num \\ 1)
-  def new(num) when num > 1, do: new(num - 1)
+  def new(num), do: DHTServer.Utils.gen_node_id() |> new(num)
 
-  def new(num) do
-    node_id = DHTServer.Utils.gen_node_id()
-    new(num, node_id)
-  end
+  def new(node_id, num) when num > 1, do: [ starter(node_id, num) | new(num - 1) ]
+  def new(node_id, num), do: [ starter(node_id, num) ]
 
-  def new(num, node_id) do
+  def starter(node_id, num) do
     cfg_port = Application.get_env(:mldht, :port) + num
     Supervisor.start_child(@name, [node_id, cfg_port])
   end
