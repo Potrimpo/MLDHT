@@ -39,12 +39,20 @@ defmodule MlDHT.Supervisor do
     supervise(children, opts)
   end
 
-  def new(), do: new(1)
+  @doc """
+  Spawns a new node on the DHT.
+  Can take a pre-computed node_id (useful for testing purposes)
+  """
+  def new(num \\ 1)
   def new(num) when num > 1, do: new(num - 1)
+
   def new(num) do
     node_id = DHTServer.Utils.gen_node_id()
-    cfg_port = Application.get_env(:mldht, :port) + num
+    new(num, node_id)
+  end
 
+  def new(num, node_id) do
+    cfg_port = Application.get_env(:mldht, :port) + num
     Supervisor.start_child(@name, [node_id, cfg_port])
   end
 

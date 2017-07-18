@@ -241,7 +241,7 @@ defmodule DHTServer.Worker do
 
     args =
     if Storage.has_nodes_for_infohash?(remote.info_hash, state.node_id) do
-      values = Storage.get_nodes(remote.info_hash)
+      values = Storage.get_nodes(state.node_id, remote.info_hash)
       [node_id: state.node_id, values: values, tid: remote.tid, token: token]
     else
       ## Get the closest nodes for the requested info_hash
@@ -270,7 +270,7 @@ defmodule DHTServer.Worker do
 
       port = if Map.has_key?(remote, :implied_port) do port else remote.port end
 
-      Storage.put(remote.info_hash, ip, port)
+      Storage.put(state.node_id, remote.info_hash, ip, port)
 
       ## Sending a ping_reply back as an acknowledgement
       send_ping_reply(remote.node_id, remote.tid, ip, port, socket)
