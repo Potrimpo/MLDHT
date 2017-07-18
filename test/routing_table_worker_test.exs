@@ -4,35 +4,43 @@ defmodule RoutingTable.Worker.Test do
   alias RoutingTable.Worker, as: RoutingTable
 
   @name :test
+  @tag updated: true
 
-  setup do
-    {:ok, _registry} = RoutingTable.start_link(:test)
-    RoutingTable.node_id(@name, "AA")
+  setup_all do
+    node_id = DHTServer.Utils.gen_node_id()
+    MlDHT.Supervisor.new(1, node_id)
+
+    [node_id: node_id]
   end
 
-  test "If the function node_id can set and get the node_id" do
-    RoutingTable.node_id(@name, "BB")
-    assert RoutingTable.node_id(@name) == "BB"
+  setup(context) do
+    {:ok, _pid} = RoutingTable.start_link(context[:node_id], :test)
+    RoutingTable.node_id(:test, context[:node_id], "AA")
   end
 
-  test "If the size of the table is 0 if we add and delete a node" do
-    RoutingTable.add(@name, "BB", {{127, 0, 0, 1}, 6881}, 23)
-    assert RoutingTable.size(@name) == 1
-
-    RoutingTable.del(@name, "BB")
-    assert RoutingTable.size(@name) == 0
+  test "If the function node_id can set and get the node_id", context do
+    RoutingTable.node_id(:test, context[:node_id], "BB")
+    assert RoutingTable.node_id(:test, context[:node_id]) == "BB"
   end
 
-  test "get_node" do
-    assert :ok == RoutingTable.add(@name, "BB", {{127, 0, 0, 1}, 6881}, 23)
+  test "If the size of the table is 0 if we add and delete a node", context do
+    RoutingTable.add(:test, context[:node_id], "BB", {{127, 0, 0, 1}, 6881}, 23)
+    assert RoutingTable.size(:test, context[:node_id]) == 1
 
-    assert RoutingTable.get(@name, "BB") |> Kernel.is_pid == true
-    assert RoutingTable.get(@name, "CC") == nil
-
-    RoutingTable.del(@name, "BB")
+    RoutingTable.del(:test, context[:node_id], "BB")
+    assert RoutingTable.size(:test, context[:node_id]) == 0
   end
 
-  test "foo" do
+  test "get_node", context do
+    assert :ok == RoutingTable.add(:test, context[:node_id], "BB", {{127, 0, 0, 1}, 6881}, 23)
+
+    assert RoutingTable.get(:test, context[:node_id], "BB") |> Kernel.is_pid == true
+    assert RoutingTable.get(:test, context[:node_id], "CC") == nil
+
+    RoutingTable.del(:test, context[:node_id], "BB")
+  end
+
+  test "foo", context do
     nodes = [
       "32F54E697351FF4AEC29CDBAABF2FBE3467CC267",
       "93990A2BE65C366458EF03ACB48680AE83D2AD94",
@@ -49,27 +57,27 @@ defmodule RoutingTable.Worker.Test do
     ]
 
     ## set a real node id
-    RoutingTable.node_id(@name, Base.decode16!("FC8A15A2FAF2734DBB1DC5F7AFDC5C9BEAEB1F59"))
+    RoutingTable.node_id(:test, context[:node_id], Base.decode16!("FC8A15A2FAF2734DBB1DC5F7AFDC5C9BEAEB1F59"))
 
     ## add all nodes
     Enum.map(nodes, fn(x) ->
-      RoutingTable.add(@name, Base.decode16!(x), {{127, 0, 0, 1}, 6881}, 23)
+      RoutingTable.add(:test, context[:node_id], Base.decode16!(x), {{127, 0, 0, 1}, 6881}, 23)
     end)
 
-    RoutingTable.print(@name)
-    RoutingTable.closest_nodes(@name, Base.decode16!("DAC8FAC14C12BB46E25F15D810BBD14267AD4ECA"))
+    RoutingTable.print(:test, context[:node_id])
+    RoutingTable.closest_nodes(:test, context[:node_id], Base.decode16!("DAC8FAC14C12BB46E25F15D810BBD14267AD4ECA"))
 
-    Enum.map(nodes, fn(x) -> RoutingTable.del(@name, Base.decode16!(x)) end)
+    Enum.map(nodes, fn(x) -> RoutingTable.del(:test, context[:node_id], Base.decode16!(x)) end)
     # RoutingTable.print
-    RoutingTable.node_id(@name, "AA")
+    RoutingTable.node_id(:test, context[:node_id], "AA")
   end
 
-  test "Double entries" do
-    RoutingTable.add(@name, "BB", {{127, 0, 0, 1}, 6881}, 23)
-    RoutingTable.add(@name, "BB", {{127, 0, 0, 1}, 6881}, 23)
+  test "Double entries", context do
+    RoutingTable.add(:test, context[:node_id], "BB", {{127, 0, 0, 1}, 6881}, 23)
+    RoutingTable.add(:test, context[:node_id], "BB", {{127, 0, 0, 1}, 6881}, 23)
 
-    assert RoutingTable.size(@name) == 1
-    RoutingTable.del(@name, "BB")
+    assert RoutingTable.size(:test, context[:node_id]) == 1
+    RoutingTable.del(:test, context[:node_id], "BB")
   end
 
 end

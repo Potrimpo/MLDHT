@@ -32,34 +32,34 @@ defmodule RoutingTable.Worker do
   ##############
 
   def start_link(node_id, ip_version) do
-    # Unsure why we're sending this string to be saved as node_id in the routing table
-    GenServer.start_link(__MODULE__, ["AAAAAAAAAAAAAAAAAAAA"], name: Namespace.name(ip_version, node_id))
+    GenServer.start_link(__MODULE__, [node_id], name: Namespace.name(ip_version, node_id))
   end
 
-  def add(name, remote_node_id, address, socket) do
-    GenServer.call(name, {:add, remote_node_id, address, socket})
+  def add(ip_vers, node_id, remote_node_id, address, socket) do
+    GenServer.call(Namespace.name(ip_vers, node_id), {:add, remote_node_id, address, socket})
   end
 
   def node_id(ip_vers, node_id) do
-    GenServer.call(Namespace.name(ip_vers, node_id), {:node_id, node_id})
+    GenServer.call(Namespace.name(ip_vers, node_id), :node_id)
   end
 
-  def node_id(name) do
-    GenServer.call(name, :node_id)
+  def node_id(ip_vers, node_id, new_node_id) do
+    GenServer.call(Namespace.name(ip_vers, node_id), {:node_id, new_node_id})
   end
 
-  def size(name) do
-    GenServer.call(name, :size)
+  def size(ip_vers, node_id) do
+    GenServer.call(Namespace.name(ip_vers, node_id), :size)
   end
 
-  def print(name) do
-    GenServer.cast(name, :print)
+  # Just for debugging
+  def print(ip_vers, node_id) do
+    GenServer.cast(Namespace.name(ip_vers, node_id), :print)
   end
 
-  # This doesn't seem to be called anywhere
-  # def get(name, node_id) do
-  #   GenServer.call(name, {:get, node_id})
-  # end
+  # Just for tests
+  def get(ip_vers, node_id, remote_node_id) do
+    GenServer.call(Namespace.name(ip_vers, node_id), {:get, remote_node_id})
+  end
 
   def get(remote, {_socket, ip_vers, node_id}) do
     GenServer.call(Namespace.name(ip_vers, node_id), {:get, remote})
@@ -69,8 +69,8 @@ defmodule RoutingTable.Worker do
     GenServer.call(Namespace.name(ip_vers, node_id), {:closest_nodes, target})
   end
 
-  def del(name, node_id) do
-    GenServer.call(name, {:del, node_id})
+  def del(ip_vers, node_id, remote_node_id) do
+    GenServer.call(Namespace.name(ip_vers, node_id), {:del, remote_node_id})
   end
 
   #################
@@ -231,8 +231,8 @@ defmodule RoutingTable.Worker do
     {:reply, state[:node_id], state}
   end
 
-  def handle_call({:node_id, node_id}, _from, state) do
-    {:reply, :ok, [node_id: node_id, buckets: state[:buckets]]}
+  def handle_call({:node_id, new_node_id}, _from, state) do
+    {:reply, :ok, [node_id: new_node_id, buckets: state[:buckets]]}
   end
 
   @doc """
