@@ -8,7 +8,7 @@ defmodule RoutingTable.Worker.Test do
 
   setup_all do
     node_id = DHTServer.Utils.gen_node_id()
-    MlDHT.Supervisor.new(1, node_id)
+    [ok: _pid] = MlDHT.Supervisor.new(node_id, 1)
 
     [node_id: node_id]
   end
