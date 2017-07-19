@@ -14,20 +14,20 @@ defmodule DHTServer.Storage.Test do
   end 
 
   test "has_nodes_for_infohash?", context do
-    Storage.put("aaaa", context[:node_id], {127, 0, 0, 1}, 6881)
+    Storage.put(context[:node_id], "aaaa", {127, 0, 0, 1}, 6881)
 
-    assert Storage.has_nodes_for_infohash?("bbbb", context[:node_id]) == false
-    assert Storage.has_nodes_for_infohash?("aaaa", context[:node_id]) == true
+    assert Storage.has_nodes_for_infohash?(context[:node_id], "bbbb") == false
+    assert Storage.has_nodes_for_infohash?(context[:node_id], "aaaa") == true
   end
 
   test "get_nodes", context do
-    Storage.put("aaaa", context[:node_id], {127, 0, 0, 1}, 6881)
-    Storage.put("aaaa", context[:node_id], {127, 0, 0, 1}, 6881)
-    Storage.put("aaaa", context[:node_id], {127, 0, 0, 2}, 6882)
+    Storage.put(context[:node_id], "aaaa", {127, 0, 0, 1}, 6881)
+    Storage.put(context[:node_id], "aaaa", {127, 0, 0, 1}, 6881)
+    Storage.put(context[:node_id], "aaaa", {127, 0, 0, 2}, 6882)
 
     Storage.print
 
-    assert Storage.get_nodes("aaaa", context[:node_id]) == [{{127,0,0,1}, 6881}, {{127, 0, 0, 2}, 6882}]
+    assert Storage.get_nodes(context[:node_id], "aaaa") == [{{127,0,0,1}, 6881}, {{127, 0, 0, 2}, 6882}]
   end
 
 end

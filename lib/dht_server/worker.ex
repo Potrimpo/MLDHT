@@ -87,12 +87,8 @@ defmodule DHTServer.Worker do
       raise "Configuration failure: Either ipv4 or ipv6 has to be set to true."
     end
 
-    ## Generate a new node ID
-    # node_id = Utils.gen_node_id()
     Logger.debug "Node-ID: #{Base.encode16 node_id}"
 
-    # Use a unique socket for each MlDHT node
-    # cfg_port = Application.get_env(:mldht, :port) + id
     socket   = if cfg_ipv4_is_enabled?, do: create_udp_socket(socket_num, :ipv4), else: nil
     socket6  = if cfg_ipv6_is_enabled?, do: create_udp_socket(socket_num, :ipv6), else: nil
 
@@ -104,13 +100,11 @@ defmodule DHTServer.Worker do
 
     ## Setup routingtable for IPv4
     if cfg_ipv4_is_enabled? do
-      RoutingTable.node_id(:ipv4, node_id)
       bootstrap(state, {socket, :inet})
     end
 
     ## Setup routingtable for IPv6
     if cfg_ipv6_is_enabled? do
-      RoutingTable.node_id(:ipv6, node_id)
       bootstrap(state, {socket6, :inet6})
     end
 

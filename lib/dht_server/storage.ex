@@ -24,7 +24,7 @@ defmodule DHTServer.Storage do
     {:ok, %{}}
   end
 
-  def put(infohash, node_id, ip, port) do
+  def put(node_id, infohash, ip, port) do
     GenServer.cast(Namespace.name(@name, node_id), {:put, infohash, ip, port})
   end
 
@@ -33,11 +33,11 @@ defmodule DHTServer.Storage do
   end
 
 
-  def has_nodes_for_infohash?(infohash, node_id) do
+  def has_nodes_for_infohash?(node_id, infohash) do
     GenServer.call(Namespace.name(@name, node_id), {:has_nodes_for_infohash?, infohash})
   end
 
-  def get_nodes(infohash, node_id) do
+  def get_nodes(node_id, infohash) do
     GenServer.call(Namespace.name(@name, node_id), {:get_nodes, infohash})
   end
 

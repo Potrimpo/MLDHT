@@ -224,8 +224,9 @@ defmodule RoutingTable.Worker do
   end
 
   @doc """
-  Without parameters this function returns our own node id. If this function
-  gets a string as a parameter, it will set this as our node id.
+  Only used for testing purposes
+  Without parameters this function returns our own node id.
+  With a parameter, sets our node_id to the given value.
   """
   def handle_call(:node_id, _from, state) do
     {:reply, state[:node_id], state}
