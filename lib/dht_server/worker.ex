@@ -234,7 +234,7 @@ defmodule DHTServer.Worker do
     token = :crypto.hash(:sha, Utils.tuple_to_ipstr(ip, port) <> state.secret)
 
     args =
-    if Storage.has_nodes_for_infohash?(remote.info_hash, state.node_id) do
+    if Storage.has_nodes_for_infohash?(state.node_id, remote.info_hash) do
       values = Storage.get_nodes(state.node_id, remote.info_hash)
       [node_id: state.node_id, values: values, tid: remote.tid, token: token]
     else
