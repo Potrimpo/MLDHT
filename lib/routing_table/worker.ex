@@ -61,8 +61,8 @@ defmodule RoutingTable.Worker do
     GenServer.call(Namespace.name(ip_vers, node_id), {:get, remote_node_id})
   end
 
-  def get(remote, {_socket, ip_vers, node_id}) do
-    GenServer.call(Namespace.name(ip_vers, node_id), {:get, remote})
+  def get({remote_node_id, address}, {socket, ip_vers, node_id}) do
+    GenServer.call(Namespace.name(ip_vers, node_id), {:get, remote_node_id, address, socket})
   end
 
   def closest_nodes(ip_vers, node_id, target) do
