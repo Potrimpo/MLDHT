@@ -7,9 +7,7 @@ defmodule DHTServer.Storage.Test do
   @tag updated: true
 
   setup_all do
-    node_id = DHTServer.Utils.gen_node_id()
-    [ok: _pid] = MlDHT.Supervisor.new(node_id, 1)
-
+    [node_id] = MlDHT.NodeList.get()
     [node_id: node_id]
   end 
 
