@@ -33,20 +33,6 @@ defmodule DHTServer.Worker do
     )
   end
 
-
-  @doc """
-  This function takes the bootstrapping nodes from the config and starts a
-  find_node search to our own node id. By doing this, we will quickly collect
-  nodes that are close to us and save it to our own routing table.
-
-  ## Example
-      iex> DHTServer.Worker.bootstrap
-  """
-  def bootstrap do
-    GenServer.cast(@name, :bootstrap)
-  end
-
-
   @doc ~S"""
   This function needs an infohash as binary, and a callback function as
   parameter. This function uses its own routing table as a starting point to
@@ -63,12 +49,12 @@ defmodule DHTServer.Worker do
     GenServer.cast(Namespace.name(@name, node_id), {:search, infohash, callback})
   end
 
-  def search_announce(infohash, callback) do
-    GenServer.cast(@name, {:search_announce, infohash, callback})
+  def search_announce(node_id, infohash, callback) do
+    GenServer.cast(Namespace.name(@name, node_id), {:search_announce, infohash, callback})
   end
 
-  def search_announce(infohash, port, callback) do
-    GenServer.cast(@name, {:search_announce, infohash, port, callback})
+  def search_announce(node_id, infohash, port, callback) do
+    GenServer.cast(Namespace.name(@name, node_id), {:search_announce, infohash, port, callback})
   end
 
 
