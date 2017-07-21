@@ -15,7 +15,16 @@ defmodule DHTServer.Worker do
 
   @name __MODULE__
 
+  @type node_id :: binary
   @type ip_vers :: :ipv4 | :ipv6
+  @typedoc"""
+  This type exists to clear up confusion.
+  A socket is just an alias for type port
+  Because the values we refer to as 'port's in arguments are actually just numbers
+  """
+  @type socket :: port
+  @type ip :: binary
+  @type address :: { ip, non_neg_integer }
 
   def start_link(node_id, socket_num) do
     Logger.debug "DHTServer.Worker.start_link"
@@ -63,6 +72,7 @@ defmodule DHTServer.Worker do
   end
 
 
+  @spec create_udp_socket(non_neg_integer, atom) :: socket | {:stop, String.t}
   def create_udp_socket(port, ip_vers) do
     options = if ip_vers == :ipv4, do: [:inet], else: [:inet6, {:ipv6_v6only, true}]
 
@@ -356,8 +366,6 @@ defmodule DHTServer.Worker do
     nodes = Application.get_env(:mldht, :bootstrap_nodes)
     |> resolve_hostnames(inet)
 
-    Logger.debug "nodes: #{inspect nodes}"
-
     ## Start a find_node search to collect neighbors for our routing table
     Search.start_link(socket, state.node_id)
     |> Search.find_node(target: state.node_id, start_nodes: nodes)
@@ -398,20 +406,28 @@ defmodule DHTServer.Worker do
   end
 
 
-  # Either updates the 'last query received' property of the responding node in the table
-  # Or adds it to the routing table
-  # query_received({remote_node_id, {ip, port}} = remote, {socket, ip_vers, state.node_id} = local)
-  defp query_received(remote, local) do
-    if node_pid = RoutingTable.get(remote, local) do
+   @doc"""
+   Either updates the 'last query received' property of the responding node in the table
+   __OR__ adds it to the routing table.
+
+   This function is only used internally, but is public so that the compiler doesn't remove the doc
+   """
+  @spec query_received({node_id, address}, {socket, atom, node_id}) :: :ok | none
+  def query_received(remote, local) do
+    if node_pid = RoutingTable.get_or_add(remote, local) do
       Node.update(node_pid, :last_query_rcv)
     end
   end
 
-  # Either updates the 'last response received' property of the responding node in the table
-  # Or adds it to the routing table
-  # response_received({remote_node_id, {ip, port}} = remote, {socket, ip_vers, state.node_id} = local)
-  defp response_received(remote, local) do
-    if node_pid = RoutingTable.get(remote, local) do
+   @doc"""
+   Either updates the 'last response received' property of the responding node in the table
+   __OR__ adds it to the routing table.
+
+   This function is only used internally, but is public so that the compiler doesn't remove the doc
+   """
+  @spec response_received({node_id, address}, {socket, atom, node_id}) :: :ok | none
+  def response_received(remote, local) do
+    if node_pid = RoutingTable.get_or_add(remote, local) do
       Node.update(node_pid, :last_response_rcv)
     end
   end

@@ -56,13 +56,20 @@ defmodule RoutingTable.Worker do
     GenServer.cast(Namespace.name(ip_vers, node_id), :print)
   end
 
-  # Just for tests
+  @doc """
+  Only used in tests
+  Fetches the given node from our routing table
+  """
   def get(ip_vers, node_id, remote_node_id) do
     GenServer.call(Namespace.name(ip_vers, node_id), {:get, remote_node_id})
   end
 
-  def get({remote_node_id, address}, {socket, ip_vers, node_id}) do
-    GenServer.call(Namespace.name(ip_vers, node_id), {:get, remote_node_id, address, socket})
+  @doc """
+  Fetched the given node from routing table
+  __OR__ adds it to the routing table
+  """
+  def get_or_add({remote_node_id, address}, {socket, ip_vers, node_id}) do
+    GenServer.call(Namespace.name(ip_vers, node_id), {:get_or_add, remote_node_id, address, socket})
   end
 
   def closest_nodes(ip_vers, node_id, target) do
@@ -195,10 +202,12 @@ defmodule RoutingTable.Worker do
   was successful, this function returns the pid, otherwise nil.
   """
   def handle_call({:get, node_id}, _from, state) do
+    IO.puts "THIS :get SHOULDN'T BE CALLED"
     {:reply, get_node(state[:buckets], node_id), state}
   end
 
-  def handle_call({:get, node_id, address, socket}, _from, state) do
+  def handle_call({:get_or_add, node_id, address, socket}, _from, state) do
+    IO.puts "getting pid for node, if it doesn't exist, add it to our routing table"
     node_tuple = {node_id, address, socket}
 
     case get_node(state[:buckets], node_id) do
@@ -387,7 +396,7 @@ defmodule RoutingTable.Worker do
   end
 
   @doc """
-
+  Will fetch a node from our RoutingTable and do nothing else
   """
   def get_node(buckets, node_id) do
     Enum.map(buckets, fn(bucket) ->

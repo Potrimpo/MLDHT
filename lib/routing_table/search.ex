@@ -46,8 +46,8 @@ defmodule RoutingTable.Search do
   @doc """
   Returns the type of the search process.
   """
-  @spec type(pid) :: search_type
-  def type(pid), do: GenServer.call(pid, :type)
+  @spec type(atom) :: search_type
+  def type(pname), do: GenServer.call(pname, :type)
 
 
 #  @spec handle_reply(pid, foo, list) :: :ok
@@ -77,7 +77,6 @@ defmodule RoutingTable.Search do
   Converts a `tid` to a process name.
   """
   @spec tid_to_process_name(transaction_id) :: atom
-
   def tid_to_process_name(tid), do: tid_to_process_name(tid, "search")
   def tid_to_process_name("", result) do
     String.replace_trailing(result, "_", "")
