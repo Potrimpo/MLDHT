@@ -299,7 +299,6 @@ defmodule DHTServer.Worker do
 
     pname = Search.tid_to_process_name(remote.tid)
     if Search.is_active?(remote.tid) do
-      IO.puts "lookup successful for :find_node_reply"
       ## If this belongs to an active search, it is actual a get_peers_reply
       ## without a token.
       if Search.type(pname) == :get_peers do
@@ -326,7 +325,6 @@ defmodule DHTServer.Worker do
 
     pname = Search.tid_to_process_name(remote.tid)
     if Search.is_active?(remote.tid) do
-      IO.puts "lookup successful for :get_peer_reply"
       Search.handle_reply(pname, remote, remote.nodes)
     end
 
