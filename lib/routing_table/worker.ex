@@ -196,18 +196,16 @@ defmodule RoutingTable.Worker do
     {:reply, list, state}
   end
 
-  @doc """
-  This functiowe will ren returns the pid for a specific node id. If the node
-  does not exists, it will try to add it to our routing table. Again, if this
-  was successful, this function returns the pid, otherwise nil.
-  """
   def handle_call({:get, node_id}, _from, state) do
-    IO.puts "THIS :get SHOULDN'T BE CALLED"
     {:reply, get_node(state[:buckets], node_id), state}
   end
 
+  @doc """
+  This function we will ren returns the pid for a specific node id. If the node
+  does not exists, it will try to add it to our routing table. Again, if this
+  was successful, this function returns the pid, otherwise nil.
+  """
   def handle_call({:get_or_add, node_id, address, socket}, _from, state) do
-    IO.puts "getting pid for node, if it doesn't exist, add it to our routing table"
     node_tuple = {node_id, address, socket}
 
     case get_node(state[:buckets], node_id) do

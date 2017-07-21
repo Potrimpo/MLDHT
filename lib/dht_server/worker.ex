@@ -59,8 +59,8 @@ defmodule DHTServer.Worker do
              IO.puts "ip: #{ip} port: #{port}"
            end)
   """
-  def search(infohash, callback) do
-    GenServer.cast(@name, {:search, infohash, callback})
+  def search(node_id, infohash, callback) do
+    GenServer.cast(Namespace.name(@name, node_id), {:search, infohash, callback})
   end
 
   def search_announce(infohash, callback) do

@@ -1,12 +1,15 @@
 defmodule MlDHT do
 
   @moduledoc ~S"""
-  MlDHT is an Elixir package that provides a Kademlia Distributed Hash Table
-  (DHT) implementation according to [BitTorrent Enhancement Proposals (BEP)
-  05](http://www.bittorrent.org/beps/bep_0005.html). This specific
-  implementation is called "mainline" variant.
+  Multinode - MlDHT is an Elixir package based off Florian Adamsky's mainline DHT package.
+  It allows creation of multiple DHT nodes for DHT indexing.
 
+  Number of DHT nodes defaults to 1, and can be set in config/config.exs like so:
 
+  ```
+  config :mldht,
+    num_nodes: 2
+  ```
   """
 
   @typedoc """
@@ -32,9 +35,12 @@ defmodule MlDHT do
   end
 
   def init([]) do
+    # Default to a single node if number not specified in config
+    num_nodes = Application.get_env(:mldht, :num_nodes) || 1
+
     children = [
-      supervisor(MlDHT.Supervisor, []),
-      supervisor(Registry, [:unique, MlDHT.Namespace])
+      supervisor(Registry, [:unique, MlDHT.Namespace]),
+      supervisor(MlDHT.Supervisor, [num_nodes])
     ]
 
     opts = [strategy: :one_for_one, name: MlDHT]
@@ -58,7 +64,11 @@ defmodule MlDHT do
            end)
   """
   @spec search(infohash, fun) :: atom
-  defdelegate search(infohash, callback), to: DHTServer.Worker
+  def search(infohash, callback) do
+    MlDHT.NodeList.get()
+    |> Enum.map(& DHTServer.Worker.search(&1, infohash, callback))
+  end
+
 
   @doc ~S"""
   This function needs an infohash as binary and callback function as
