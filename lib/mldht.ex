@@ -85,7 +85,10 @@ defmodule MlDHT do
            end)
   """
   @spec search_announce(infohash, fun) :: atom
-  defdelegate search_announce(infohash, callback), to: DHTServer.Worker
+  def search_announce(infohash, callback) do
+    MlDHT.NodeList.get()
+    |> Enum.map(& DHTServer.Worker.search_announce(&1, infohash, callback))
+  end
 
   @doc ~S"""
   This function needs an infohash as binary, a callback function as parameter,
@@ -101,6 +104,9 @@ defmodule MlDHT do
            end, 6881)
   """
   @spec search_announce(infohash, fun, tcp_port) :: atom
-  defdelegate search_announce(infohash, callback, port), to: DHTServer.Worker
+  def search_announce(infohash, callback, port) do
+    MlDHT.NodeList.get()
+    |> Enum.map(& DHTServer.Worker.search_announce(&1, infohash, callback, port))
+  end
 
 end
