@@ -9,7 +9,14 @@ defmodule MlDHT.Mixfile do
      start_permanent: Mix.env == :prod,
      description: description(),
      package: package(),
-     deps: deps()]
+     deps: deps(),
+     dialyzer: [
+       paths: [
+         "_build/dev/lib/krpc_protocol/ebin",
+         "_build/dev/lib/bencodex/ebin"
+       ]
+     ]
+    ]
   end
 
   def application do
@@ -30,7 +37,8 @@ defmodule MlDHT.Mixfile do
     [{:bencodex,      "~> 1.0.0"},
      {:krpc_protocol, "~> 0.0.3"},
      {:ex_doc,        "~> 0.10",  only: :dev},
-     {:pretty_hex,    "~> 0.0.1", only: :dev}
+     {:pretty_hex,    "~> 0.0.1", only: :dev},
+     {:dialyxir, "~> 0.5", only: [:dev], runtime: false}
     ]
   end
 
