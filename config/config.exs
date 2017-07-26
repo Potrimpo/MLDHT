@@ -33,7 +33,9 @@ use Mix.Config
 
 # Sample configuration (overrides the imported configuration above):
 #
-# config :logger, :console,
-#   level: :debug
-#       format: "$date $time [$level] $metadata$message\n",
-#       metadata: [:user_id]
+# config :logger,
+#   backends: [:console],
+#   compile_time_purge_level: :warn
+
+# config :mldht,
+#   num_nodes: 2
