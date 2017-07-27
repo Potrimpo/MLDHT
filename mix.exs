@@ -13,7 +13,8 @@ defmodule MlDHT.Mixfile do
      dialyzer: [
        paths: [
          "_build/dev/lib/krpc_protocol/ebin",
-         "_build/dev/lib/bencodex/ebin"
+         "_build/dev/lib/bencodex/ebin",
+         "_build/dev/lib/pretty_hex/ebin"
        ]
      ]
     ]
